@@ -31,3 +31,13 @@ The **Rail Web Client** is the frontend interface for the Rail Web Server projec
 1. Clone the repository:
    ```bash
    git clone https://github.com/AkarshanGhosh/rail_web_client.git
+
+
+
+---
+
+### Notes:
+ **© 2025 Akarshan Ghosh. All rights reserved.**
+
+
+   
