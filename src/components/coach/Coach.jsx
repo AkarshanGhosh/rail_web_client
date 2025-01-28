@@ -18,14 +18,14 @@ const CoachDetails = () => {
         const response = await axios.get(apiUrl);
 
         if (response.data.train?.length > 0) {
-          // Sort the data by the latest (using `date` and `time` fields from the backend)
+          // Sort the data by the latest using date and time
           const sortedData = response.data.train.sort(
             (a, b) =>
               new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`)
           );
           setCoachData(sortedData);
         } else {
-          setCoachData([]);
+          setCoachData([]); // No data fallback
         }
       } catch (error) {
         console.error("Error fetching coach data:", error.response?.data || error.message);
@@ -35,11 +35,11 @@ const CoachDetails = () => {
       }
     };
 
-    // Fetch data initially and set up a 3-second interval for reloading
+    // Fetch data initially and set up a 3-second interval for live updates
     fetchCoachData();
     const interval = setInterval(fetchCoachData, 3000);
 
-    // Cleanup the interval on component unmount
+    // Cleanup interval on component unmount
     return () => clearInterval(interval);
   }, [trainNumber, coach]);
 
@@ -80,20 +80,28 @@ const CoachDetails = () => {
               </tr>
             </thead>
             <tbody>
-              {coachData.map((data, index) => (
-                <tr key={index}>
-                  <td className="border border-gray-300 px-4 py-2">{data.train_Number}</td>
-                  <td className="border border-gray-300 px-4 py-2">{data.coach}</td>
-                  <td className="border border-gray-300 px-4 py-2">{data.latitude}</td>
-                  <td className="border border-gray-300 px-4 py-2">{data.longitude}</td>
-                  <td className="border border-gray-300 px-4 py-2">{data.chain_status}</td>
-                  <td className="border border-gray-300 px-4 py-2">{data.temperature}</td>
-                  <td className="border border-gray-300 px-4 py-2">{data.humidity}</td>
-                  <td className="border border-gray-300 px-4 py-2">{data.error}</td>
-                  <td className="border border-gray-300 px-4 py-2">{data.date}</td>
-                  <td className="border border-gray-300 px-4 py-2">{data.time}</td>
+              {coachData.length > 0 ? (
+                coachData.map((data, index) => (
+                  <tr key={index}>
+                    <td className="border border-gray-300 px-4 py-2">{data.train_Number || "N/A"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.coach || "N/A"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.latitude || "N/A"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.longitude || "N/A"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.chain_status || "N/A"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.temperature || "N/A"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.humidity || "N/A"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.error || "000"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.date || "N/A"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.time || "N/A"}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="10" className="text-center border border-gray-300 px-4 py-2">
+                    No data available
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
