@@ -20,7 +20,7 @@ const ProfileBody = () => {
           return;
         }
 
-        const response = await axios.get("http://localhost:3000/api/user/data", {
+        const response = await axios.get("https://rail-web-server.onrender.com/api/user/data", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
