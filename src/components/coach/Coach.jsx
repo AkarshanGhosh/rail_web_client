@@ -74,6 +74,7 @@ const CoachDetails = () => {
                 <th className="border border-gray-300 px-4 py-2">Chain Status</th>
                 <th className="border border-gray-300 px-4 py-2">Temperature</th>
                 <th className="border border-gray-300 px-4 py-2">Humidity</th>
+                <th className="border border-gray-300 px-4 py-2">Memory</th>
                 <th className="border border-gray-300 px-4 py-2">Error</th>
                 <th className="border border-gray-300 px-4 py-2">Date</th>
                 <th className="border border-gray-300 px-4 py-2">Time</th>
@@ -90,6 +91,7 @@ const CoachDetails = () => {
                     <td className="border border-gray-300 px-4 py-2">{data.chain_status || "N/A"}</td>
                     <td className="border border-gray-300 px-4 py-2">{data.temperature || "N/A"}</td>
                     <td className="border border-gray-300 px-4 py-2">{data.humidity || "N/A"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{data.memory || "000"}</td>
                     <td className="border border-gray-300 px-4 py-2">{data.error || "000"}</td>
                     <td className="border border-gray-300 px-4 py-2">{data.date || "N/A"}</td>
                     <td className="border border-gray-300 px-4 py-2">{data.time || "N/A"}</td>
