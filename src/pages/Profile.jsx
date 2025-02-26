@@ -5,7 +5,7 @@ import ProfileBody from "../components/Profile/ProfileBody.jsx";
 
 const Profile = () => {
   return (
-    <div className="flex bg-zinc-900 text-white min-h-screen">
+    <div className="flex bg-white text-white min-h-screen">
       
       
       <div className="flex-grow px-10 py-8">

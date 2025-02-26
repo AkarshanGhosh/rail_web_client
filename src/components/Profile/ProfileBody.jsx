@@ -3,7 +3,6 @@ import axios from "axios";
 import Sidebar from "./Sidebar";
 import Settings from "./settings"; // Import Settings component
 import UnderConstruction from "../UnderConstruction";
-import ReadLater from "./ReadLater.jsx"; // Import ReadLater component
 
 const ProfileBody = () => {
   const [userData, setUserData] = useState(null);
@@ -43,8 +42,8 @@ const ProfileBody = () => {
       case "profile":
         return (
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-yellow-400 mb-6">
-              Welcome, {userData?.name}
+            <h1 className="text-2xl lg:text-3xl font-bold text-blue-600 mb-6">
+              Welcome, {userData?.username}
             </h1>
             <div className="flex flex-col lg:flex-row items-center mb-8">
               <img
@@ -53,29 +52,35 @@ const ProfileBody = () => {
                 className="w-24 h-24 lg:w-32 lg:h-32 rounded-full mb-4 lg:mb-0 lg:mr-6"
               />
               <div className="text-center lg:text-left">
-                <p className="text-xl lg:text-2xl font-semibold text-white">
-                  {userData?.name}
+                <p className="text-xl lg:text-2xl font-semibold text-black">
+                  {userData?.username}
                 </p>
-                <p className="text-md lg:text-lg text-zinc-300">
-                  {userData?.email}
+                <p className="text-md lg:text-lg text-gray-600">
+                  Email: {userData?.email}
                 </p>
-                {/* Display User ID */}
-                <p className="text-md lg:text-lg text-zinc-300">
-                  User ID: {userData?.id}
+                <p className="text-md lg:text-lg text-gray-600">
+                  Phone: {userData?.phone_number}
+                </p>
+                <p className="text-md lg:text-lg text-gray-600">
+                  Role: {userData?.role}
+                </p>
+                <p className="text-md lg:text-lg text-gray-600">
+                  Created At: {new Date(userData?.createdAt).toLocaleString()}
+                </p>
+                <p className="text-md lg:text-lg text-gray-600">
+                  Updated At: {new Date(userData?.updatedAt).toLocaleString()}
                 </p>
               </div>
             </div>
           </div>
         );
-      case "readLater":
-        return <ReadLater />;  // Return the ReadLater component
       case "downloads":
         return <UnderConstruction />; // Render UnderConstruction for Downloads
       case "settings":
         return <Settings />; // Render Settings component
       default:
         return (
-          <div className="text-lg text-zinc-300">
+          <div className="text-lg text-gray-600">
             Select an option from the sidebar to view details.
           </div>
         );
@@ -84,7 +89,7 @@ const ProfileBody = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-900 text-white">
+      <div className="flex items-center justify-center min-h-screen bg-white text-black">
         Loading...
       </div>
     );
@@ -92,17 +97,17 @@ const ProfileBody = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-900 text-red-500">
+      <div className="flex items-center justify-center min-h-screen bg-white text-red-600">
         Failed to load user data. Please try again.
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-zinc-900 text-white">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white text-black">
       {/* Sidebar */}
       <div
-        className="w-full lg:w-1/4 bg-zinc-800 p-4 flex flex-col h-screen"
+        className="w-full lg:w-1/4 bg-gray-200 p-4 flex flex-col h-screen"
         style={{ transition: "all 0.3s ease" }}
       >
         <Sidebar setActiveSection={setActiveSection} />
