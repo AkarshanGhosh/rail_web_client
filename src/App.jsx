@@ -9,8 +9,9 @@ import Profile from './pages/Profile';
 import { Routes, Route } from "react-router-dom";
 import Dashboard from './pages/dashboard';
 import ViewResources from './components/viewResources/ViewResources';
-import CoachDetails from './pages/CoachDetails'; // Import CoachDetails component
-import Admin from './pages/Admin'; // Import AdminBody component
+import CoachDetails from './pages/CoachDetails'; 
+import Admin from './pages/Admin'; 
+import AddTrain from './pages/AddTrain'; // ✅ Import AddTrain component
 
 const App = () => {
   return (
@@ -39,9 +40,11 @@ const App = () => {
           {/* Dynamic route for viewing coach details */}
           <Route path="/coach-details/:trainNumber/:coach" element={<CoachDetails />} />
 
+          {/* Route for Admin Dashboard */}
           <Route path="/admin-dashboard" element={<Admin />} />
 
-          
+          {/* ✅ New Route for Adding Train */}
+          <Route path="/add-train" element={<AddTrain />} />
 
           {/* Route for 404 - Page Not Found */}
           <Route
