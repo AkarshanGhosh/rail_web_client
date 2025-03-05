@@ -7,31 +7,26 @@ import { assets } from "../../assets/assets";
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation(); // Get the current URL
-  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn); // Redux state for login
-  const [isOpen, setIsOpen] = useState(false); // Mobile menu toggle state
+  const location = useLocation();
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const role = useSelector((state) => state.auth.role);
+  const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const handleLogout = () => {
-    // Clear session storage
     sessionStorage.clear();
-
-    // Dispatch Redux logout action
     dispatch(authActions.logout());
-
-    // Close the mobile menu
     setIsOpen(false);
-
-    // Redirect to the login page
     navigate("/login");
   };
 
   const links = [
     { title: "Home", link: "/" },
-    ...(isLoggedIn ? [{ title: "Dashboard", link: "/dashboard" }] : []), // Only visible when logged in
+    ...(isLoggedIn ? [{ title: "Dashboard", link: "/dashboard" }] : []),
     { title: "Contact Us", link: "/contact-us" },
     ...(isLoggedIn ? [{ title: "Profile", link: "/profile" }] : []),
+    ...(isLoggedIn && role === "admin" ? [{ title: "Admin Dashboard", link: "/admin-dashboard" }] : []), // ✅ Visible only for logged-in admins
   ];
 
   return (
@@ -56,16 +51,10 @@ const Navbar = () => {
           ))}
           {!isLoggedIn && (
             <>
-              <Link
-                to="/login"
-                className="text-lg px-6 py-2 border border-green-500 rounded-full hover:bg-green-500 hover:text-white transition-all duration-300"
-              >
+              <Link to="/login" className="text-lg px-6 py-2 border border-green-500 rounded-full hover:bg-green-500 hover:text-white transition-all duration-300">
                 Log In
               </Link>
-              <Link
-                to="/signup"
-                className="text-lg px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-all duration-300"
-              >
+              <Link to="/signup" className="text-lg px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-all duration-300">
                 Sign Up
               </Link>
             </>
@@ -100,25 +89,17 @@ const Navbar = () => {
                 to={item.link}
                 className="text-lg px-6 py-2 hover:bg-green-500 rounded-full text-center transition-all duration-300"
                 key={i}
-                onClick={toggleMenu} // Close menu after clicking a link
+                onClick={toggleMenu}
               >
                 {item.title}
               </Link>
             ))}
             {!isLoggedIn && (
               <>
-                <Link
-                  to="/login"
-                  className="w-full text-lg px-6 py-2 border border-green-500 rounded-full hover:bg-green-500 hover:text-white transition-all duration-300 text-center"
-                  onClick={toggleMenu}
-                >
+                <Link to="/login" className="w-full text-lg px-6 py-2 border border-green-500 rounded-full hover:bg-green-500 hover:text-white transition-all duration-300 text-center" onClick={toggleMenu}>
                   Log In
                 </Link>
-                <Link
-                  to="/signup"
-                  className="w-full text-lg px-6 py-2 bg-green-500 rounded-full hover:bg-green-600 transition-all duration-300 text-center"
-                  onClick={toggleMenu}
-                >
+                <Link to="/signup" className="w-full text-lg px-6 py-2 bg-green-500 rounded-full hover:bg-green-600 transition-all duration-300 text-center" onClick={toggleMenu}>
                   Sign Up
                 </Link>
               </>

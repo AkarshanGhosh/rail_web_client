@@ -2,14 +2,15 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { jwtDecode } from "jwt-decode"; // ✅ Correct Import
 import { authActions } from "../../store/auth";
 import ForgetPassword from "./ForgetPassword";
 
 const Login = () => {
   const [values, setValues] = useState({ emailOrPhone: "", password: "" });
-  const [message, setMessage] = useState(""); // To display notifications
-  const [messageType, setMessageType] = useState(""); // 'success' or 'error'
-  const [showForgetPassword, setShowForgetPassword] = useState(false); // Toggle for ForgetPassword component
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
+  const [showForgetPassword, setShowForgetPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -22,7 +23,7 @@ const Login = () => {
   };
 
   const submit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
     try {
       if (!values.emailOrPhone || !values.password) {
@@ -31,7 +32,6 @@ const Login = () => {
         return;
       }
 
-      // Determine if the input is an email or phone number
       const isEmail = values.emailOrPhone.includes("@");
       const payload = {
         email: isEmail ? values.emailOrPhone : "",
@@ -44,40 +44,50 @@ const Login = () => {
       const response = await axios.post("https://rail-web-server.onrender.com/api/auth/login", payload);
 
       if (response.data.success) {
-        // Store login details in session storage
+        const token = response.data.token;
+
+        if (!token) {
+          console.error("No token received from API");
+          return;
+        }
+
+        // ✅ Decode the JWT token to extract role
+        const decodedToken = jwtDecode(token);
+        console.log("Decoded Token:", decodedToken);
+
+        const role = decodedToken.role || "user"; // Default to "user" if role is missing
+        console.log("User Role Extracted from Token:", role);
+
+        // ✅ Store login details in session storage
         sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.setItem("token", token);
+        sessionStorage.setItem("role", role); // ✅ Store role
 
-        // Store user details if available
-        if (response.data.user) {
-          sessionStorage.setItem("user", JSON.stringify(response.data.user));
-        }
-
-        // Store user token if available
-        if (response.data.token) {
-          sessionStorage.setItem("token", response.data.token);
-        }
-
-        // Dispatch login action
+        // ✅ Dispatch login action and update Redux state
         dispatch(authActions.login());
+        dispatch(authActions.changeRole(role)); // ✅ Update Redux with role
 
         setMessageType("success");
         setMessage("Login Successful!");
 
-        // Redirect to home page after 1 second
         setTimeout(() => {
           navigate("/");
         }, 1000);
       } else {
+        console.error("Invalid API Response:", response.data);
         setMessageType("error");
         setMessage(response.data.message || "Login failed. Please try again.");
       }
     } catch (error) {
       console.error("Login Error:", error);
 
-      // Enhanced Error Handling
-      if (error.response && error.response.data && error.response.data.message) {
+      if (error.response?.data) {
+        console.error("Full API Response:", error.response.data);
+      }
+
+      if (error.response?.data?.message) {
         setMessageType("error");
-        setMessage(error.response.data.message); // Show server error message
+        setMessage(error.response.data.message);
       } else {
         setMessageType("error");
         setMessage("Something went wrong. Please try again.");

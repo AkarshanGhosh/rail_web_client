@@ -10,6 +10,7 @@ import { Routes, Route } from "react-router-dom";
 import Dashboard from './pages/dashboard';
 import ViewResources from './components/viewResources/ViewResources';
 import CoachDetails from './pages/CoachDetails'; // Import CoachDetails component
+import Admin from './pages/Admin'; // Import AdminBody component
 
 const App = () => {
   return (
@@ -37,6 +38,10 @@ const App = () => {
 
           {/* Dynamic route for viewing coach details */}
           <Route path="/coach-details/:trainNumber/:coach" element={<CoachDetails />} />
+
+          <Route path="/admin-dashboard" element={<Admin />} />
+
+          
 
           {/* Route for 404 - Page Not Found */}
           <Route
