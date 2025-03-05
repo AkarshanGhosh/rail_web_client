@@ -1,37 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios"; // Import axios
 import { authActions } from "../../store/auth";
 import { assets } from "../../assets/assets";
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation(); // Get the current URL
-  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn); // Redux state for login
-  const [isOpen, setIsOpen] = useState(false); // Mobile menu toggle state
+  const location = useLocation();
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // Track admin role
+
+  // Function to check if user is an admin
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await axios.get("https://rail-web-server.onrender.com/api/user/data", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Assuming the API response contains { role: "admin" }
+        if (response.data.role === "admin") {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setIsAdmin(false); // Fallback to false on error
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchUserData();
+    }
+  }, [isLoggedIn]);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const handleLogout = () => {
-    // Clear session storage
-    sessionStorage.clear();
-
-    // Dispatch Redux logout action
     dispatch(authActions.logout());
-
-    // Close the mobile menu
+    sessionStorage.clear();
+    localStorage.removeItem("token"); // Remove token on logout
     setIsOpen(false);
-
-    // Redirect to the login page
     navigate("/login");
   };
 
   const links = [
     { title: "Home", link: "/" },
-    ...(isLoggedIn ? [{ title: "Dashboard", link: "/dashboard" }] : []), // Only visible when logged in
+    ...(isLoggedIn ? [{ title: "Dashboard", link: "/dashboard" }] : []),
     { title: "Contact Us", link: "/contact-us" },
     ...(isLoggedIn ? [{ title: "Profile", link: "/profile" }] : []),
+    ...(isAdmin ? [{ title: "Admin Dashboard", link: "/admin-dashboard" }] : []), // Only for admins
   ];
 
   return (
@@ -100,7 +127,7 @@ const Navbar = () => {
                 to={item.link}
                 className="text-lg px-6 py-2 hover:bg-green-500 rounded-full text-center transition-all duration-300"
                 key={i}
-                onClick={toggleMenu} // Close menu after clicking a link
+                onClick={toggleMenu}
               >
                 {item.title}
               </Link>
