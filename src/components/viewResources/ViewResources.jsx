@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Loader from "../Loder";
+import Loader from "../Loder"; // Assuming Loader is a well-styled component
 
 const ViewResources = () => {
   const { id } = useParams(); // Extract resource ID from the URL
@@ -69,45 +69,65 @@ const ViewResources = () => {
 
   if (loading) {
     return (
-      <div className="h-screen bg-gray-100 flex items-center justify-center">
-        <Loader />
+      <div className="min-h-screen flex items-center justify-center
+                      bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-800">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-indigo-500 border-t-transparent"></div>
+          <p className="text-xl font-medium">Loading train details...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-red-500">Failed to load resource. Please try again later.</p>
+      <div className="min-h-screen flex items-center justify-center
+                      bg-gradient-to-br from-red-50 via-orange-50 to-rose-50 text-red-700">
+        <div className="text-center p-8 rounded-xl bg-white/90 backdrop-blur-sm shadow-xl border border-red-200">
+          <h2 className="text-2xl font-bold mb-4">Error</h2>
+          <p className="text-lg">Failed to load resource. Please try again later.</p>
+        </div>
       </div>
     );
   }
 
   return (
     data && (
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4 lg:px-16">
-        <div className="w-full max-w-6xl bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl text-gray-800 font-bold mb-6">Train Details</h1>
-          <p className="text-lg text-gray-600 mb-2"><strong>Train Name:</strong> {data.train_Name}</p>
-          <p className="text-lg text-gray-600 mb-2"><strong>Train Number:</strong> {data.train_Number}</p>
-          <p className="text-lg text-gray-600 mb-2"><strong>Division:</strong> {data.division}</p>
-          <p className="text-lg text-gray-600 mb-2"><strong>State:</strong> {data.states}</p>
-          <p className="text-lg text-gray-600 mb-6"><strong>City:</strong> {data.cities}</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-900 flex flex-col items-center p-8 lg:p-12">
+        <div className="w-full max-w-6xl bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20 animate-fade-in-up">
+          <h1 className="text-4xl lg:text-5xl font-extrabold mb-8
+                         bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-700">
+            Train Details
+          </h1>
 
-          <h2 className="text-2xl text-gray-800 font-bold mb-4">Available Coaches</h2>
+          <div className="space-y-4 mb-10">
+            <p className="text-lg text-gray-700"><strong className="font-semibold text-gray-900">Train Name:</strong> {data.train_Name}</p>
+            <p className="text-lg text-gray-700"><strong className="font-semibold text-gray-900">Train Number:</strong> {data.train_Number}</p>
+            <p className="text-lg text-gray-700"><strong className="font-semibold text-gray-900">Division:</strong> {data.division}</p>
+            <p className="text-lg text-gray-700"><strong className="font-semibold text-gray-900">State:</strong> {data.states}</p>
+            <p className="text-lg text-gray-700"><strong className="font-semibold text-gray-900">City:</strong> {data.cities}</p>
+          </div>
+
+          <h2 className="text-3xl font-extrabold mb-6
+                         bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-700">
+            Available Coaches
+          </h2>
           <div className="flex flex-wrap gap-4">
             {coaches.length > 0 ? (
               coaches.map((coach, index) => (
                 <button
                   key={index}
-                  onClick={() => handleCoachClick(coach)} // Handle button click
-                  className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition-all duration-300"
+                  onClick={() => handleCoachClick(coach)}
+                  className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl
+                             hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300"
                 >
                   {coach}
                 </button>
               ))
             ) : (
-              <p className="text-lg text-gray-600">No coaches available for this train.</p>
+              <p className="text-xl text-gray-700 font-medium p-4 rounded-xl bg-gray-50/70 border border-gray-200 shadow-sm">
+                No coaches available for this train.
+              </p>
             )}
           </div>
         </div>

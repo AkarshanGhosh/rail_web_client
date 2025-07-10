@@ -1,4 +1,5 @@
-import { FaSignOutAlt } from "react-icons/fa";
+import { FaSignOutAlt } from "react-icons/fa"; // Keep FaSignOutAlt if you prefer, or replace
+import { IoPersonOutline, IoSettingsOutline, IoLogOutOutline } from "react-icons/io5"; // Import new icons
 
 const Sidebar = ({ setActiveSection }) => {
   const handleLogout = () => {
@@ -7,31 +8,51 @@ const Sidebar = ({ setActiveSection }) => {
   };
 
   return (
-    <div className="w-full lg:w-full flex flex-col justify-between bg-white">
+    // The w-full lg:w-full is controlled by the parent ProfileBody's lg:w-1/4
+    // Removed redundant bg-white as parent (ProfileBody) handles its background/blur.
+    <div className="w-full flex flex-col justify-between h-full py-4 lg:py-8 space-y-2">
       {/* Navigation Links */}
-      <div className="flex flex-col">
-        <div
-          onMouseEnter={() => setActiveSection("profile")}
-          className="w-full py-4 px-6 text-black font-bold text-lg cursor-pointer hover:bg-gray-300 hover:text-blue-600 transition-all duration-300"
+      <nav className="flex flex-col space-y-2 flex-grow">
+        <button
+          onClick={() => setActiveSection("profile")}
+          className="flex items-center space-x-3 w-full py-3 px-5 text-gray-700 font-medium text-lg rounded-xl
+                     hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
         >
-          Profile
-        </div>
-        {/* Settings Section */}
-        <div
-          onMouseEnter={() => setActiveSection("settings")}
-          className="w-full py-4 px-6 text-black font-bold text-lg cursor-pointer hover:bg-gray-300 hover:text-blue-600 transition-all duration-300"
+          <IoPersonOutline className="text-xl" />
+          <span>Profile</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSection("settings")}
+          className="flex items-center space-x-3 w-full py-3 px-5 text-gray-700 font-medium text-lg rounded-xl
+                     hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
         >
-          Settings
-        </div>
-      </div>
+          <IoSettingsOutline className="text-xl" />
+          <span>Settings</span>
+        </button>
+
+        {/* You had a Downloads section in ProfileBody, let's add it here too */}
+        <button
+          onClick={() => setActiveSection("downloads")}
+          className="flex items-center space-x-3 w-full py-3 px-5 text-gray-700 font-medium text-lg rounded-xl
+                     hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        >
+          <IoLogOutOutline className="text-xl transform rotate-90" /> {/* Using IoLogOutOutline for download icon (can be changed) */}
+          <span>Downloads</span>
+        </button>
+
+      </nav>
 
       {/* Logout Section */}
-      <div
+      <button
         onClick={handleLogout}
-        className="w-full py-4 px-6 bg-red-500 text-white font-bold text-lg cursor-pointer hover:bg-red-700 hover:text-gray-100 transition-all duration-300 mt-2"
+        className="flex items-center justify-center space-x-2 w-full py-3 px-5
+                   bg-red-500 text-white font-semibold text-lg rounded-xl
+                   hover:bg-red-600 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
       >
-        Log Out <FaSignOutAlt className="ml-2" />
-      </div>
+        <IoLogOutOutline className="text-xl" /> {/* Using IoLogOutOutline for consistency */}
+        <span>Log Out</span>
+      </button>
     </div>
   );
 };

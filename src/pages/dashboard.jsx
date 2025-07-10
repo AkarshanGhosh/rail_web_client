@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // For navigation
-import Loader from "../components/Loder";
+import Loader from "../components/Loder"; // Assuming Loader is a well-styled component
 import ResourceCard from "../components/ResourceCard/ResourceCard";
 import axios from "axios";
 
@@ -79,15 +79,21 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100 px-8 lg:px-16 py-8">
-      <h4 className="text-4xl lg:text-5xl font-semibold text-gray-800 mb-8 text-center">Dashboard</h4>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-900 px-4 py-8 lg:px-12 lg:py-12">
+      <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-10 text-center animate-fade-in-down
+                     bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-700">
+        Dashboard
+      </h1>
 
       {/* Search Bar */}
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-12">
         <input
           type="text"
           placeholder="Search by train name, number, division, state, or cities..."
-          className="w-full max-w-2xl p-4 rounded-lg text-gray-800 bg-gray-50 border border-gray-300 focus:outline-none focus:ring focus:ring-green-400 shadow-md"
+          className="w-full max-w-3xl p-4 rounded-xl text-gray-800
+                     bg-white/70 backdrop-blur-md border border-white/20
+                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                     shadow-lg transition-all duration-300 hover:shadow-xl placeholder-gray-500"
           value={searchTerm}
           onChange={handleSearch}
         />
@@ -95,16 +101,18 @@ const Dashboard = () => {
 
       {/* Loader */}
       {loading ? (
-        <div className="flex items-center justify-center">
-          <Loader />
+        <div className="flex items-center justify-center flex-grow min-h-[50vh]">
+          <Loader /> {/* Ensure your Loader component is styled appropriately */}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-12">
           {/* Display Filtered Data */}
           {filteredData.length > 0 ? (
             filteredData.map((item, i) => <ResourceCard key={i} data={item} />)
           ) : (
-            <p className="text-center text-red-500 text-xl font-semibold">No resources found</p>
+            <p className="col-span-full text-center text-gray-600 text-2xl font-bold p-8 rounded-xl bg-white/70 backdrop-blur-md shadow-lg border border-white/20">
+              No resources found
+            </p>
           )}
         </div>
       )}

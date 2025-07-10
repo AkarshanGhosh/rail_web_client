@@ -3,13 +3,20 @@ import PropTypes from "prop-types";
 
 const ResourceCard = ({ data }) => {
   return (
-    <Link to={`/division-id/${data._id}`}>
-      <div className="bg-white rounded-lg p-6 shadow-lg flex flex-col border border-gray-200 hover:shadow-xl transition-shadow duration-300">
-        <h2 className="mt-4 text-xl font-semibold text-gray-800">Train Name: {data.train_Name}</h2>
-        <p className="mt-2 text-gray-600 font-medium">Train Number: {data.train_Number}</p>
-        <p className="mt-2 text-gray-600 font-medium">Division: {data.division}</p>
-        <p className="mt-2 text-gray-600 font-medium">State: {data.states}</p>
-        <p className="mt-2 text-gray-600 font-medium">City: {data.cities}</p>
+    <Link to={`/division-id/${data._id}`} className="block h-full"> {/* Added h-full to Link for consistent card height in grids */}
+      <div className="bg-white/90 backdrop-blur-sm p-7 rounded-2xl shadow-lg flex flex-col h-full // h-full here too
+                      border border-white/20 hover:shadow-xl hover:border-indigo-200
+                      transition-all duration-300 transform hover:-translate-y-1 animate-fade-in-up">
+        <h2 className="text-2xl font-bold text-gray-900 mb-3
+                       bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-700">
+          {data.train_Name}
+        </h2>
+        <div classNamename="space-y-2 text-gray-700">
+          <p className="font-medium"><span className="font-semibold text-gray-800">Train Number:</span> {data.train_Number}</p>
+          <p className="font-medium"><span className="font-semibold text-gray-800">Division:</span> {data.division}</p>
+          <p className="font-medium"><span className="font-semibold text-gray-800">State:</span> {data.states}</p>
+          <p className="font-medium"><span className="font-semibold text-gray-800">City:</span> {data.cities}</p>
+        </div>
       </div>
     </Link>
   );

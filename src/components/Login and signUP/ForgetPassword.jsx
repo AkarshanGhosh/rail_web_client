@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5"; // Import eye icons
 
 const ForgetPassword = () => {
   const [email, setEmail] = useState(""); // To store the email
@@ -7,6 +8,18 @@ const ForgetPassword = () => {
   const [newPassword, setNewPassword] = useState(""); // To store the new password
   const [step, setStep] = useState(1); // To track the current step
   const [message, setMessage] = useState(""); // To display messages
+  const [messageType, setMessageType] = useState(""); // 'success' or 'error' for messages
+  const [showNewPassword, setShowNewPassword] = useState(false); // State for new password visibility
+
+  // Helper to set message and clear it after a delay
+  const displayMessage = (msg, type) => {
+    setMessageType(type);
+    setMessage(msg);
+    setTimeout(() => {
+      setMessage("");
+      setMessageType("");
+    }, 5000); // Clear message after 5 seconds
+  };
 
   const handleSendOtp = async () => {
     try {
@@ -15,13 +28,14 @@ const ForgetPassword = () => {
         { email }
       );
       if (response.data.success) {
-        setMessage("OTP sent to your email.");
+        displayMessage("OTP sent to your email.", "success");
         setStep(2); // Move to the OTP verification step
       } else {
-        setMessage(response.data.message);
+        displayMessage(response.data.message || "Failed to send OTP.", "error");
       }
     } catch (error) {
-      setMessage("Error sending OTP. Please try again.");
+      console.error("Error sending OTP:", error);
+      displayMessage("Error sending OTP. Please try again.", "error");
     }
   };
 
@@ -36,86 +50,123 @@ const ForgetPassword = () => {
         }
       );
       if (response.data.success) {
-        setMessage("Password reset successfully. Redirecting to login...");
+        displayMessage("Password reset successfully. Redirecting to login...", "success");
         setTimeout(() => {
           window.location.href = "/login"; // Redirect to login page
         }, 2000);
       } else {
-        setMessage(response.data.message);
+        displayMessage(response.data.message || "Failed to reset password.", "error");
       }
     } catch (error) {
-      setMessage("Error resetting password. Please try again.");
+      console.error("Error resetting password:", error);
+      displayMessage("Error resetting password. Please try again.", "error");
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4 text-center text-gray-800">
+    // Main Container: Modern gradient background
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-12">
+      <div className="w-full max-w-md bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-white/20 animate-fade-in-up">
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center
+                       bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-700">
           Reset Password
         </h1>
+
+        {/* Notification Message */}
         {message && (
-          <p className="text-center mb-4 text-sm font-medium text-red-500">
+          <p className={`mt-4 mb-6 p-3 rounded-lg text-center font-semibold ${
+            messageType === "success"
+              ? "bg-green-100 text-green-700 border border-green-200"
+              : "bg-red-100 text-red-700 border-red-200"
+          }`}>
             {message}
           </p>
         )}
+
         {step === 1 && (
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium mb-2 text-gray-700"
-            >
-              Enter your email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 mb-4"
-              placeholder="Enter your email"
-            />
+          <div className="space-y-6">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                Enter your email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 text-gray-800 rounded-xl bg-gray-50 border border-gray-300
+                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
             <button
               onClick={handleSendOtp}
-              className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-all"
+              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 px-4 rounded-xl
+                         hover:shadow-lg transform hover:scale-[1.01] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300"
             >
               Send OTP
             </button>
           </div>
         )}
+
         {step === 2 && (
-          <div>
-            <label
-              htmlFor="otp"
-              className="block text-sm font-medium mb-2 text-gray-700"
-            >
-              Enter the OTP sent to your email
-            </label>
-            <input
-              type="text"
-              id="otp"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 mb-4"
-              placeholder="Enter OTP"
-            />
-            <label
-              htmlFor="newPassword"
-              className="block text-sm font-medium mb-2 text-gray-700"
-            >
-              Enter your new password
-            </label>
-            <input
-              type="password"
-              id="newPassword"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-400 mb-4"
-              placeholder="Enter new password"
-            />
+          <div className="space-y-6">
+            <div>
+              <label
+                htmlFor="otp"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                Enter the OTP sent to your email
+              </label>
+              <input
+                type="text"
+                id="otp"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full px-4 py-3 text-gray-800 rounded-xl bg-gray-50 border border-gray-300
+                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                placeholder="Enter OTP"
+                required
+              />
+            </div>
+            <div className="relative"> {/* Added relative positioning for the icon */}
+              <label
+                htmlFor="newPassword"
+                className="block text-gray-700 font-medium mb-2"
+              >
+                Enter your new password
+              </label>
+              <input
+                type={showNewPassword ? "text" : "password"}
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-4 py-3 text-gray-800 rounded-xl bg-gray-50 border border-gray-300
+                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm pr-10" // Added pr-10 for icon space
+                placeholder="Enter new password"
+                required
+              />
+              <button
+                type="button" // Important: Prevent form submission
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center pt-8 text-gray-600 hover:text-indigo-600 focus:outline-none"
+                aria-label={showNewPassword ? "Hide password" : "Show password"}
+              >
+                {showNewPassword ? (
+                  <IoEyeOffOutline className="h-5 w-5" />
+                ) : (
+                  <IoEyeOutline className="h-5 w-5" />
+                )}
+              </button>
+            </div>
             <button
               onClick={handleVerifyOtpAndResetPassword}
-              className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-all"
+              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-3 px-4 rounded-xl
+                         hover:shadow-lg transform hover:scale-[1.01] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-300"
             >
               Reset Password
             </button>
@@ -123,12 +174,12 @@ const ForgetPassword = () => {
         )}
 
         {/* Login Page Link */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+        <div className="mt-8 text-center">
+          <p className="text-gray-600">
             Remember your password?{" "}
             <a
               href="/login"
-              className="text-green-500 font-medium hover:underline"
+              className="text-indigo-600 hover:text-purple-700 font-medium hover:underline transition-colors duration-200"
             >
               Log In
             </a>

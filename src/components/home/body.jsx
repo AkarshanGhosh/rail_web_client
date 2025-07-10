@@ -1,33 +1,43 @@
-import { assets } from "../../assets/assets";
+import React from "react";
+import { assets } from "../../assets/assets"; // Assuming this path is correct
 
 function Body() {
   return (
-    <div className="h-auto lg:h-[75vh] flex flex-col-reverse lg:flex-row items-center lg:items-center px-4 lg:px-16 bg-white">
-      {/* Left Section */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start justify-center mt-8 lg:mt-0">
-        <h1 className="text-4xl lg:text-6xl font-semibold text-gray-800 text-center lg:text-left">
-          Welcome to Rail Watch 
+    <div className="min-h-screen lg:h-[75vh] flex flex-col-reverse lg:flex-row items-center justify-center px-4 py-16 lg:px-16
+                    bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-hidden">
+      {/* Left Section - Text Content */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start justify-center mt-8 lg:mt-0 text-center lg:text-left p-4">
+        {/* Modern Heading with Gradient */}
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight
+                       bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-700 drop-shadow-md">
+          Welcome to Rail Watch
         </h1>
 
-        <p className="mt-4 text-lg lg:text-xl text-gray-600 text-center lg:text-left">
-        This platform is designed exclusively for railway employees to efficiently monitor the condition of train chains across the network. 
-        Stay updated in real-time on whether chains are intact or have been pulled, ensuring quick responses to any disruptions and 
-        maintaining passenger safety.To access the monitoring dashboard and detailed train chain reports, 
-        employees are required to log in with their credentials. Your secure account ensures access to critical 
-        information and helps maintain operational integrity
+        {/* Concise and Punchy Paragraph Text */}
+        <p className="mt-6 text-lg lg:text-xl text-gray-700 leading-relaxed max-w-2xl">
+          Empowering railway employees with real-time train chain monitoring. Ensure safety and operational integrity with instant updates and comprehensive reports.
         </p>
-        <div className="mt-6">
-          <div className="inline-block text-gray-800 text-lg font-semibold border border-gray-800 px-6 py-2 hover:bg-gray-200 rounded-full">
-            Discover
-          </div>
+
+        {/* Modernized Discover Button */}
+        <div className="mt-8">
+          <button
+            onClick={() => { /* Add navigation or action here, e.g., navigate('/discover') */ }}
+            className="inline-block px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white
+                       font-semibold rounded-full shadow-lg hover:shadow-xl
+                       transform hover:scale-105 transition-all duration-300
+                       focus:outline-none focus:ring-4 focus:ring-blue-300 cursor-pointer"
+          >
+            Discover More
+          </button>
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center">
+      {/* Right Section - Image */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <img
-          src={assets.train}
+          src={assets.train} // Ensure assets.train points to your image
           alt="train"
-          className="w-32 lg:w-full max-w-xs lg:max-w-lg object-contain"
+          className="w-full max-w-sm lg:max-w-lg object-contain rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-300 ease-in-out"
         />
       </div>
     </div>
