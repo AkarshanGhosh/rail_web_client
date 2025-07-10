@@ -28,7 +28,7 @@ const Dashboard = () => {
     if (isAuthenticated) {
       const fetchData = async () => {
         try {
-          const response = await axios.get("https://rail-web-server.onrender.com/api/division/get-all-division", {
+          const response = await axios.get("https://rail-web-server-r7z1.onrender.com/api/division/get-all-division", {
             headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` }, // Include token in the request
           });
           const formattedData = response.data.data.map((item) => ({

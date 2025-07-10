@@ -43,7 +43,7 @@ const SignUpBody = () => {
       console.log("Request Payload:", payload); // Log the payload for debugging
 
       // Make API call
-      const response = await axios.post("https://rail-web-server.onrender.com/api/auth/register", payload);
+      const response = await axios.post("https://rail-web-server-r7z1.onrender.com/api/auth/register", payload);
 
       if (response.data.success) {
         setMessageType("success");

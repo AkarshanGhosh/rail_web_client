@@ -11,7 +11,7 @@ const ForgetPassword = () => {
   const handleSendOtp = async () => {
     try {
       const response = await axios.post(
-        "https://rail-web-server.onrender.com/api/auth/forgot-password",
+        "https://rail-web-server-r7z1.onrender.com/api/auth/forgot-password",
         { email }
       );
       if (response.data.success) {
@@ -28,7 +28,7 @@ const ForgetPassword = () => {
   const handleVerifyOtpAndResetPassword = async () => {
     try {
       const response = await axios.post(
-        "https://rail-web-server.onrender.com/api/auth/reset-password",
+        "https://rail-web-server-r7z1.onrender.com/api/auth/reset-password",
         {
           email,
           otp,

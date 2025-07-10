@@ -54,7 +54,7 @@ const AddTrainBody = () => {
 
     try {
       const response = await axios.post(
-        "https://rail-web-server.onrender.com/api/division/add-division",
+        "https://rail-web-server-r7z1.onrender.com/api/division/add-division",
         payload,
         {
           headers: {

@@ -13,7 +13,7 @@ const CoachDetails = () => {
     const fetchCoachData = async () => {
       try {
         // Construct the API URL with query parameters
-        const apiUrl = `https://rail-web-server.onrender.com/api/coach/get-coach-data?train_Number=${trainNumber}&coach=${coach}`;
+        const apiUrl = `https://rail-web-server-r7z1.onrender.com/api/coach/get-coach-data?train_Number=${trainNumber}&coach=${coach}`;
 
         const response = await axios.get(apiUrl);
 

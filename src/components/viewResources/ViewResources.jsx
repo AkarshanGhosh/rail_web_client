@@ -28,7 +28,7 @@ const ViewResources = () => {
       const fetchData = async () => {
         try {
           // Fetch train details
-          const response = await axios.get(`https://rail-web-server.onrender.com/api/division/division-id/${id}`, {
+          const response = await axios.get(`https://rail-web-server-r7z1.onrender.com/api/division/division-id/${id}`, {
             headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` }, // Include token in the request
           });
           const trainDetails = response.data.data;
@@ -36,7 +36,7 @@ const ViewResources = () => {
 
           // Fetch coaches with a POST request
           const coachesResponse = await axios.post(
-            "https://rail-web-server.onrender.com/api/coach/get-coach",
+            "https://rail-web-server-r7z1.onrender.com/api/coach/get-coach",
             { train_Number: trainDetails.train_Number }, // Pass train number in the body
             { headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` } } // Include token
           );

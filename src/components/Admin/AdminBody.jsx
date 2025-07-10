@@ -11,7 +11,7 @@ const AdminBody = () => {
   // Fetch all trains
   const getAllTrains = async () => {
     try {
-      const response = await axios.get("https://rail-web-server.onrender.com/api/division/get-all-trains");
+      const response = await axios.get("https://rail-web-server-r7z1.onrender.com/api/division/get-all-trains");
       setTrains(response.data.trains);
       setMessage("Fetched all trains successfully!");
     } catch (error) {
@@ -23,7 +23,7 @@ const AdminBody = () => {
   // Fetch all users
   const getAllUsers = async () => {
     try {
-      const response = await axios.get("https://rail-web-server.onrender.com/api/admin/get-all-users");
+      const response = await axios.get("https://rail-web-server-r7z1.onrender.com/api/admin/get-all-users");
       setUsers(response.data.users);
       setMessage("Fetched all users successfully!");
     } catch (error) {
@@ -35,7 +35,7 @@ const AdminBody = () => {
   // Delete a train
   const deleteTrain = async (trainId) => {
     try {
-      await axios.delete(`https://rail-web-server.onrender.com/api/division/delete-train/${trainId}`);
+      await axios.delete(`https://rail-web-server-r7z1.onrender.com/api/division/delete-train/${trainId}`);
       setMessage("Train deleted successfully!");
       getAllTrains(); // Refresh train list
     } catch (error) {
@@ -47,7 +47,7 @@ const AdminBody = () => {
   // Mail all users
   const mailAllUsers = async () => {
     try {
-      await axios.post("https://rail-web-server.onrender.com/api/admin/mail-all-users");
+      await axios.post("https://rail-web-server-r7z1.onrender.com/api/admin/mail-all-users");
       setMessage("Emails sent to all users!");
     } catch (error) {
       console.error("Error mailing users:", error);
