@@ -7,7 +7,7 @@ import hand_wave from './hand_wave.png'
 import menu from './menu-black.png'
 import close from './close-black.png'
 import books_img from './books.svg'
-import favicon from './favicon.webp'
+
 import logo from './logo.png'
 import train from './train.jpg'
 
@@ -23,7 +23,7 @@ export const assets = {
     menu,
     close,
     books_img,
-    favicon,
+   
     train
     
     
