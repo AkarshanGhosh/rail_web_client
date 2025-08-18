@@ -15,17 +15,18 @@ import Admin from './pages/Admin';
 import AddTrain from './pages/AddTrain';
 
 import { Routes, Route } from 'react-router-dom';
+import { useState, useEffect } from 'react'; // Add this import
 
 // OPTION A: If you created the separate component earlier, uncomment this:
 // import InstallPWA from './components/InstallPWA.jsx';
 
 // OPTION B: Use the lightweight inline version below
 function InstallPWAInline() {
-  const [deferredPrompt, setDeferredPrompt] = React.useState(null);
-  const [visible, setVisible] = React.useState(false);
-  const [installed, setInstalled] = React.useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null); // Remove React.
+  const [visible, setVisible] = useState(false); // Remove React.
+  const [installed, setInstalled] = useState(false); // Remove React.
 
-  React.useEffect(() => {
+  useEffect(() => { // Remove React.
     const onBeforeInstall = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
