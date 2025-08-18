@@ -2,10 +2,14 @@ import React, { useState, useEffect } from "react";
 import { assets } from "../../assets/assets";
 
 function Body() {
-  // State to hold the fetched chain alerts
+  // Existing state for chain alerts
   const [chainAlerts, setChainAlerts] = useState([]);
-  // State to track if data is still loading
   const [loading, setLoading] = useState(true);
+
+  // PWA install state
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   // Function to fetch active chain status alerts from the server
   const fetchChainAlerts = async () => {
@@ -50,6 +54,67 @@ function Body() {
   const handleClearAllAlerts = () => {
     setChainAlerts([]);
   };
+
+  // PWA install handler
+  const handleInstallPWA = async () => {
+    if (!deferredPrompt) {
+      alert('PWA installation is not available at this time.');
+      return;
+    }
+
+    try {
+      // Show the installation prompt
+      deferredPrompt.prompt();
+      
+      // Wait for the user's choice
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      console.log(`User ${outcome} the install prompt`);
+      
+      if (outcome === 'accepted') {
+        console.log('PWA installation accepted');
+      }
+      
+      // Clear the deferred prompt
+      setDeferredPrompt(null);
+      setShowInstallButton(false);
+    } catch (error) {
+      console.error('Error during PWA installation:', error);
+    }
+  };
+
+  // Setup PWA install prompt listener
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      
+      // Store the event for later use
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+      
+      console.log('PWA install prompt available');
+    };
+
+    const handleAppInstalled = () => {
+      console.log('PWA was installed');
+      setIsInstalled(true);
+      setShowInstallButton(false);
+      setDeferredPrompt(null);
+    };
+
+    // Listen for the beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+    // Listen for the appinstalled event
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Cleanup event listeners
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
 
   // Fetch alerts on component mount and set up polling for real-time updates
   useEffect(() => {
@@ -174,14 +239,39 @@ function Body() {
             Empowering railway employees with real-time train chain monitoring. Ensure safety and operational integrity with instant updates and comprehensive reports.
           </p>
 
-          {/* Modernized Discover Button */}
-          <div className="mt-8">
+          {/* Button Container */}
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start">
+            {/* Existing Discover Button */}
             <button
               onClick={() => { /* Add navigation or action here, e.g., navigate('/discover') */ }}
               className="inline-block px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300 cursor-pointer"
             >
               Discover More
             </button>
+
+            {/* PWA Install Button */}
+            {showInstallButton && !isInstalled && (
+              <button
+                onClick={handleInstallPWA}
+                className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-green-300 cursor-pointer"
+                title="Install Rail Watch App"
+              >
+                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+                Install App
+              </button>
+            )}
+
+            {/* App Installed Message */}
+            {isInstalled && (
+              <div className="inline-flex items-center px-6 py-2 bg-green-100 text-green-800 rounded-full border border-green-300">
+                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                App Installed!
+              </div>
+            )}
           </div>
         </div>
 
