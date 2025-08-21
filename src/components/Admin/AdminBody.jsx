@@ -152,6 +152,14 @@ const AdminBody = () => {
         }
     };
 
+    // NEW: Modify/Edit train function
+    const modifyTrain = (train) => {
+        // Navigate to add-train page with edit mode and pass train data
+        navigate("/add-train?edit=1&id=" + train._id, {
+            state: { train: train }
+        });
+    };
+
     // Send email to users
     const sendEmail = async () => {
         console.log("DEBUG: sendEmail function called.");
@@ -516,17 +524,20 @@ const AdminBody = () => {
                                                         <div className="flex items-center space-x-2 mr-4 text-sm text-gray-500">
                                                             <span>States: {train.states}</span>
                                                         </div>
+                                                        <div className="flex items-center space-x-2 mr-4 text-sm text-blue-600">
+                                                            <span>Coaches: {train.coach_uid ? train.coach_uid.length : 0}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    {/* Modify Train Button (Coming Soon) */}
+                                                    {/* Modify Train Button - NOW ENABLED */}
                                                     <button
-                                                        onClick={() => displayMessage("Modify train feature coming soon!")}
-                                                        className="flex items-center space-x-1 bg-yellow-500 text-white px-3 py-1 rounded-lg opacity-50 cursor-not-allowed"
-                                                        disabled
+                                                        onClick={() => modifyTrain(train)}
+                                                        disabled={isLoading}
+                                                        className="flex items-center space-x-1 bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50"
                                                     >
                                                         <IoPencilOutline className="text-sm" />
-                                                        <span className="text-sm">Modify (Soon)</span>
+                                                        <span className="text-sm">Modify</span>
                                                     </button>
                                                     {/* Delete Train Button */}
                                                     <button

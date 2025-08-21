@@ -1,37 +1,35 @@
-// App.jsx
-
-// Pages & layout
-import Home from './pages/Home';
-import Navbar from './components/Navbar/Navbar';
-import Footer from './components/Footer/Footer';
-import LogIn from './pages/login';
-import Signup from './pages/signup';
-import ContactUs from './pages/ContactUs';
-import Profile from './pages/Profile';
-import Dashboard from './pages/dashboard';
-import ViewResources from './components/viewResources/ViewResources';
-import CoachDetails from './pages/CoachDetails';
-import Admin from './pages/Admin';
-import AddTrain from './pages/AddTrain';
-
+// src/App.jsx
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useState, useEffect } from 'react'; // Add this import
 
-// OPTION A: If you created the separate component earlier, uncomment this:
-// import InstallPWA from './components/InstallPWA.jsx';
+// Pages & Components
+import Home from './pages/Home.jsx';
+import Navbar from './components/Navbar/Navbar.jsx';
+import Footer from './components/Footer/Footer.jsx';
+import LogIn from './pages/login.jsx';
+import Signup from './pages/signup.jsx';
+import ContactUs from './pages/ContactUs.jsx';
+import Profile from './pages/Profile.jsx';
+import Dashboard from './pages/dashboard.jsx';
+import ViewResources from './components/viewResources/ViewResources.jsx';
+import CoachDetails from './pages/CoachDetails.jsx';
+import Admin from './pages/Admin.jsx';
+import AddTrain from './pages/AddTrain.jsx';
 
-// OPTION B: Use the lightweight inline version below
+// Small, safe inline PWA installer
 function InstallPWAInline() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null); // Remove React.
-  const [visible, setVisible] = useState(false); // Remove React.
-  const [installed, setInstalled] = useState(false); // Remove React.
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [visible, setVisible] = useState(false);
+  const [installed, setInstalled] = useState(false);
 
-  useEffect(() => { // Remove React.
+  useEffect(() => {
     const onBeforeInstall = (e) => {
+      // avoid mini-infobar on mobile
       e.preventDefault();
       setDeferredPrompt(e);
       setVisible(true);
     };
+
     const onInstalled = () => {
       setInstalled(true);
       setVisible(false);
@@ -40,6 +38,7 @@ function InstallPWAInline() {
 
     window.addEventListener('beforeinstallprompt', onBeforeInstall);
     window.addEventListener('appinstalled', onInstalled);
+
     return () => {
       window.removeEventListener('beforeinstallprompt', onBeforeInstall);
       window.removeEventListener('appinstalled', onInstalled);
@@ -49,9 +48,12 @@ function InstallPWAInline() {
   const handleInstall = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    await deferredPrompt.userChoice; // { outcome: 'accepted' | 'dismissed' }
-    setDeferredPrompt(null);
-    setVisible(false);
+    try {
+      await deferredPrompt.userChoice; // { outcome: 'accepted' | 'dismissed' }
+    } finally {
+      setDeferredPrompt(null);
+      setVisible(false);
+    }
   };
 
   if (!visible || installed) return null;
@@ -68,7 +70,7 @@ function InstallPWAInline() {
   );
 }
 
-const App = () => {
+export default function App() {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -111,11 +113,8 @@ const App = () => {
 
       <Footer />
 
-      {/* Show the Install button when eligible */}
-      {/* OPTION A: <InstallPWA /> */}
+      {/* PWA install CTA (only shows when eligible) */}
       <InstallPWAInline />
     </div>
   );
-};
-
-export default App;
+}
