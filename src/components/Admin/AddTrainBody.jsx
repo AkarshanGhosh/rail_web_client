@@ -4,7 +4,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { IoArrowBack, IoTrainOutline, IoLocationOutline, IoBusinessOutline, IoTicketOutline, IoAdd, IoTrash } from "react-icons/io5";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:1000";
+const API_BASE = "https://rail-web-server-r7z1.onrender.com";
 
 const emptyTrain = {
   division: "",
@@ -51,7 +51,7 @@ const AddTrainBody = () => {
   const divisions = ["NFR", "ER", "WR", "SER", "SR", "NWR"];
 
   // If editing but state was not passed, you could fetch here (optional)
-  // We’ll keep it simple to avoid changing routes; your AdminBody passes state.
+  // We'll keep it simple to avoid changing routes; your AdminBody passes state.
   useEffect(() => {
     if (isEdit && !location.state?.train) {
       // Optional fetch-by-id if needed (uncomment if your route exists)
