@@ -1,135 +1,147 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Loader from "../Loder"; // Assuming your Loader component path is correct
-import { IoDownloadOutline } from "react-icons/io5"; // Import download icon
+import Loader from "../Loder";
+import { IoDownloadOutline } from "react-icons/io5";
 
 // Import jspdf and jspdf-autotable
 import jsPDF from 'jspdf';
-// Option A: Standard side-effect import (most common and usually sufficient)
 import 'jspdf-autotable';
-// Option B: Explicit plugin application (try this ONLY if Option A still fails after clean install)
-// import { applyPlugin } from 'jspdf-autotable';
-// applyPlugin(jsPDF);
-
 
 const CoachDetails = () => {
-  // --- CRUCIAL: Ensure these are at the very beginning of the component function ---
-  const { trainNumber, coach } = useParams(); // Extract trainNumber and coach from the URL
-
-  // Add these console logs to confirm useParams is working
+  const { trainNumber, coach } = useParams(); // coach is actually coach_uid from URL
+  
   console.log("CoachDetails component loaded.");
-  console.log("Train Number from URL (useParams):", trainNumber);
-  console.log("Coach from URL (useParams):", coach);
-  // --- END CRUCIAL SECTION ---
-
+  console.log("Train Number from URL:", trainNumber);
+  console.log("Coach UID from URL:", coach);
 
   const [coachData, setCoachData] = useState([]);
+  const [coachInfo, setCoachInfo] = useState(null); // To store coach name and other details
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Function to fetch coach data
   const fetchCoachData = async () => {
-    // Check if trainNumber or coach are undefined before making API call
     if (!trainNumber || !coach) {
-      console.warn("Missing trainNumber or coach parameter from URL. Cannot fetch data.");
+      console.warn("Missing trainNumber or coach UID parameter from URL. Cannot fetch data.");
       setLoading(false);
       setError(true);
+      setErrorMessage("Missing train number or coach UID in URL parameters.");
       return;
     }
 
     try {
-      // Construct the API URL with query parameters
-      const apiUrl = `https://rail-web-server-r7z1.onrender.com/api/coach/get-coach-data?train_Number=${trainNumber}&coach=${coach}`;
+      // Updated API URL with correct parameter name
+      const apiUrl = `https://rail-web-server-r7z1.onrender.com/api/coach/get-coach-data?train_Number=${trainNumber}&coach_uid=${coach}`;
+      
+      const response = await axios.get(apiUrl, {
+        headers: { 
+          Authorization: `Bearer ${sessionStorage.getItem("token")}` 
+        }
+      });
 
-      const response = await axios.get(apiUrl);
+      console.log("API Response:", response.data);
 
       if (response.data.train?.length > 0) {
-        // Sort the data by the latest using date and time (descending order)
-        const sortedData = response.data.train.sort(
-          (a, b) =>
-            new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`)
-        );
+        // Sort the data by createdAt or date/time (descending order - latest first)
+        const sortedData = response.data.train.sort((a, b) => {
+          // Use createdAt if available, otherwise fall back to date/time
+          if (a.createdAt && b.createdAt) {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          }
+          return new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`);
+        });
+        
         setCoachData(sortedData);
+        
+        // Set coach info from the first record (they should all have the same coach info)
+        if (sortedData[0]) {
+          setCoachInfo({
+            coach_uid: sortedData[0].coach_uid,
+            coach_name: sortedData[0].coach_name || `Coach ${sortedData[0].coach_uid}`,
+            train_Number: sortedData[0].train_Number,
+            train_Name: sortedData[0].train_Name || 'Unknown Train'
+          });
+        }
       } else {
-        setCoachData([]); // No data fallback
+        setCoachData([]);
+        setErrorMessage("No data available for this coach.");
       }
     } catch (error) {
       console.error("Error fetching coach data:", error.response?.data || error.message);
       setError(true);
+      setErrorMessage(
+        error.response?.data?.message || 
+        "Failed to load coach data. Please check if the train number and coach UID are valid."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Effect hook to fetch data initially and set up a 3-second interval for live updates
+  // Effect hook to fetch data initially and set up a 5-second interval for live updates
   useEffect(() => {
     fetchCoachData();
-    const interval = setInterval(fetchCoachData, 3000); // Fetch data every 3 seconds
+    const interval = setInterval(fetchCoachData, 5000); // Fetch data every 5 seconds
 
-    // Cleanup interval on component unmount to prevent memory leaks
     return () => clearInterval(interval);
-  }, [trainNumber, coach]); // Re-run effect if trainNumber or coach changes
+  }, [trainNumber, coach]);
 
   // Function to handle PDF download
   const handleDownloadPdf = () => {
-    console.log("handleDownloadPdf function initiated.");
-    console.log("Coach data available for PDF:", coachData.length > 0 ? "Yes" : "No", "Length:", coachData.length);
-
-    // Critical Debugging Logs for jsPDF
-    console.log("Checking jsPDF and autoTable availability:");
-    console.log("typeof jsPDF:", typeof jsPDF);
-    console.log("typeof jsPDF.autoTable (direct static method):", typeof jsPDF.autoTable);
-    console.log("typeof jsPDF.prototype.autoTable:", typeof jsPDF.prototype.autoTable); // THIS IS THE MOST IMPORTANT
-
+    console.log("PDF download initiated.");
+    
     if (coachData.length === 0) {
-      alert("No data available to download as PDF. Please ensure data is loaded.");
-      console.warn("PDF generation aborted: No coach data to process.");
+      alert("No data available to download as PDF.");
       return;
     }
 
     try {
       const doc = new jsPDF();
 
-      // Debugging logs for the instance
-      console.log("jsPDF instance 'doc' created:", doc);
-      console.log("typeof doc.autoTable (instance method):", typeof doc.autoTable);
-
       // Define columns for the PDF table
       const tableColumn = [
-        "Train Number", "Coach", "Latitude", "Longitude", "Chain Status",
-        "Temperature", "Humidity", "Memory", "Error", "Date", "Time"
+        "Train Number", "Train Name", "Coach UID", "Coach Name", "Chain Status",
+        "Latitude", "Longitude", "Temperature (°C)", "Humidity (%)", 
+        "Memory", "Error", "Date", "Time"
       ];
 
       // Prepare rows from coachData
       const tableRows = coachData.map(data => [
         data.train_Number || "N/A",
-        data.coach || "N/A",
+        data.train_Name || "N/A",
+        data.coach_uid || "N/A",
+        data.coach_name || "N/A",
+        data.chain_status || "N/A",
         data.latitude || "N/A",
         data.longitude || "N/A",
-        data.chain_status || "N/A",
         data.temperature || "N/A",
         data.humidity || "N/A",
-        data.memory || "000",
-        data.error || "000",
+        data.memory || "N/A",
+        data.error || "N/A",
         data.date || "N/A",
         data.time || "N/A",
       ]);
 
-      // Set document title and add it to the PDF
+      // Set document title
       doc.setFontSize(18);
-      // Accessing trainNumber and coach here is correct because they are in scope
-      doc.text(`Coach Details for Train ${trainNumber}, Coach ${coach}`, 14, 22);
+      doc.text(`Coach Details Report`, 14, 22);
+      
+      doc.setFontSize(12);
+      doc.text(`Train: ${coachInfo?.train_Name || trainNumber} (${trainNumber})`, 14, 35);
+      doc.text(`Coach: ${coachInfo?.coach_name || 'Unknown'} (UID: ${coach})`, 14, 45);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 55);
 
       // Add autoTable to the document
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
-        startY: 30,
+        startY: 65,
         theme: 'grid',
         styles: {
-          fontSize: 8,
-          cellPadding: 3,
+          fontSize: 7,
+          cellPadding: 2,
         },
         headStyles: {
           fillColor: [75, 0, 130],
@@ -138,18 +150,23 @@ const CoachDetails = () => {
         },
         alternateRowStyles: {
           fillColor: [245, 245, 245]
+        },
+        columnStyles: {
+          0: { cellWidth: 15 }, // Train Number
+          1: { cellWidth: 20 }, // Train Name
+          2: { cellWidth: 12 }, // Coach UID
+          3: { cellWidth: 18 }, // Coach Name
         }
       });
 
       // Save the PDF
-      // Accessing trainNumber and coach here is correct
       const fileName = `coach_details_${trainNumber}_${coach}_${new Date().toISOString().slice(0, 10)}.pdf`;
       doc.save(fileName);
       console.log(`PDF successfully generated: ${fileName}`);
 
     } catch (pdfError) {
-      console.error("An error occurred during PDF generation:", pdfError);
-      alert("Failed to generate PDF. Please check your browser console for detailed error messages.");
+      console.error("PDF generation error:", pdfError);
+      alert("Failed to generate PDF. Please try again.");
     }
   };
 
@@ -158,27 +175,28 @@ const CoachDetails = () => {
     console.log("CSV download initiated.");
     if (coachData.length === 0) {
       alert("No data available to download as CSV.");
-      console.warn("CSV download aborted: No data in coachData.");
       return;
     }
 
     // Define CSV headers
     const headers = [
-      "Train Number", "Coach", "Latitude", "Longitude", "Chain Status",
-      "Temperature", "Humidity", "Memory", "Error", "Date", "Time"
+      "Train Number", "Train Name", "Coach UID", "Coach Name", "Chain Status",
+      "Latitude", "Longitude", "Temperature", "Humidity", "Memory", "Error", "Date", "Time"
     ];
 
-    // Map your coachData to CSV rows
+    // Map coachData to CSV rows
     const rows = coachData.map(data => [
       data.train_Number || "N/A",
-      data.coach || "N/A",
+      data.train_Name || "N/A",
+      data.coach_uid || "N/A",
+      data.coach_name || "N/A",
+      data.chain_status || "N/A",
       data.latitude || "N/A",
       data.longitude || "N/A",
-      data.chain_status || "N/A",
       data.temperature || "N/A",
       data.humidity || "N/A",
-      data.memory || "000",
-      data.error || "000",
+      data.memory || "N/A",
+      data.error || "N/A",
       data.date || "N/A",
       data.time || "N/A",
     ]);
@@ -186,128 +204,212 @@ const CoachDetails = () => {
     // Combine headers and rows
     const csvContent = [
       headers.join(','),
-      ...rows.map(row => row.join(','))
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
     ].join('\n');
 
-    // Create a Blob from the CSV content
+    // Create and download the file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-    // Create a link element and trigger the download
     const link = document.createElement("a");
+    
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      // Accessing trainNumber and coach here is correct
       link.setAttribute("download", `coach_details_${trainNumber}_${coach}_${new Date().toISOString().slice(0, 10)}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      console.log("CSV download initiated successfully.");
-    } else {
-      alert("Your browser does not support automatic CSV download. Please copy the data manually.");
+      console.log("CSV download completed.");
     }
   };
 
-
-  // Conditional rendering for loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <Loader />
+        <div className="flex flex-col items-center space-y-6">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-indigo-200 rounded-full animate-spin"></div>
+            <div className="w-16 h-16 border-4 border-indigo-600 rounded-full animate-spin absolute top-0 left-0" 
+                 style={{borderRightColor: 'transparent', animationDirection: 'reverse', animationDuration: '1s'}}></div>
+          </div>
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Loading Coach Details</h2>
+            <p className="text-gray-600">Fetching real-time data...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Conditional rendering for error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
-        <p className="text-red-600 text-lg font-semibold">Failed to load coach data. Please ensure the train number and coach are valid in the URL, or try again later.</p>
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-rose-50 flex items-center justify-center p-4">
+        <div className="text-center p-8 rounded-2xl bg-white/90 backdrop-blur-sm shadow-2xl border border-red-200 max-w-md">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-red-800 mb-4">Error Loading Data</h2>
+          <p className="text-red-600 mb-6">{errorMessage}</p>
+          <button 
+            onClick={() => {
+              setError(false);
+              setLoading(true);
+              fetchCoachData();
+            }}
+            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl 
+                       transition-all duration-300 transform hover:scale-105"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col items-center py-8 px-4 lg:px-16">
-      <div className="w-full max-w-6xl bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-6">
-          <h1 className="text-3xl text-gray-800 font-bold mb-4 md:mb-0">
-            Coach Details: Train {trainNumber}, Coach {coach}
-          </h1>
-          <div className="flex space-x-4">
-            <button
-              onClick={handleDownloadPdf}
-              className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white
-                         px-6 py-2 rounded-xl font-semibold shadow-md hover:shadow-lg
-                         transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300"
-            >
-              <IoDownloadOutline className="text-lg" />
-              <span>Download PDF</span>
-            </button>
-            <button
-              onClick={handleDownloadCsv}
-              className="flex items-center space-x-2 bg-gradient-to-r from-green-500 to-teal-600 text-white
-                         px-6 py-2 rounded-xl font-semibold shadow-md hover:shadow-lg
-                         transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-green-300"
-            >
-              <IoDownloadOutline className="text-lg" />
-              <span>Download CSV</span>
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-8 border border-white/30">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6">
+            <div className="mb-6 lg:mb-0">
+              <h1 className="text-4xl font-extrabold mb-4 bg-clip-text text-transparent 
+                           bg-gradient-to-r from-indigo-600 to-purple-600">
+                Coach Details Dashboard
+              </h1>
+              <div className="space-y-2 text-lg">
+                <div className="flex items-center space-x-3">
+                  <span className="font-semibold text-gray-700">Train:</span>
+                  <span className="font-bold text-gray-900">
+                    {coachInfo?.train_Name || 'Loading...'} ({trainNumber})
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="font-semibold text-gray-700">Coach:</span>
+                  <span className="font-bold text-gray-900">
+                    {coachInfo?.coach_name || 'Loading...'} 
+                  </span>
+                  <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
+                    UID: {coach}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2 mt-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-gray-600">Live Data - Updates every 5 seconds</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+              <button
+                onClick={handleDownloadPdf}
+                className="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 
+                         text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl
+                         transform hover:scale-105 transition-all duration-300"
+              >
+                <IoDownloadOutline className="text-lg" />
+                <span>Download PDF</span>
+              </button>
+              <button
+                onClick={handleDownloadCsv}
+                className="flex items-center justify-center space-x-2 bg-gradient-to-r from-green-500 to-teal-600 
+                         text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl
+                         transform hover:scale-105 transition-all duration-300"
+              >
+                <IoDownloadOutline className="text-lg" />
+                <span>Download CSV</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-          <table className="w-full min-w-[800px] border-collapse">
-            <thead>
-              <tr className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-                <th className="px-4 py-3 text-left font-semibold rounded-tl-xl">Train Number</th>
-                <th className="px-4 py-3 text-left font-semibold">Coach</th>
-                <th className="px-4 py-3 text-left font-semibold">Latitude</th>
-                <th className="px-4 py-3 text-left font-semibold">Longitude</th>
-                <th className="px-4 py-3 text-left font-semibold">Chain Status</th>
-                <th className="px-4 py-3 text-left font-semibold">Temperature</th>
-                <th className="px-4 py-3 text-left font-semibold">Humidity</th>
-                <th className="px-4 py-3 text-left font-semibold">Memory</th>
-                <th className="px-4 py-3 text-left font-semibold">Error</th>
-                <th className="px-4 py-3 text-left font-semibold">Date</th>
-                <th className="px-4 py-3 text-left font-semibold rounded-tr-xl">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coachData.length > 0 ? (
-                coachData.map((data, index) => (
-                  <tr key={index} className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 text-gray-700">{data.train_Number || "N/A"}</td>
-                    <td className="px-4 py-3 text-gray-700">{data.coach || "N/A"}</td>
-                    <td className="px-4 py-3 text-gray-700">{data.latitude || "N/A"}</td>
-                    <td className="px-4 py-3 text-gray-700">{data.longitude || "N/A"}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        data.chain_status === 'Intact' ? 'bg-green-100 text-green-800' :
-                        data.chain_status === 'Pulled' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {data.chain_status || "N/A"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">{data.temperature || "N/A"}</td>
-                    <td className="px-4 py-3 text-gray-700">{data.humidity || "N/A"}</td>
-                    <td className="px-4 py-3 text-gray-700">{data.memory || "000"}</td>
-                    <td className="px-4 py-3 text-gray-700">{data.error || "000"}</td>
-                    <td className="px-4 py-3 text-gray-700">{data.date || "N/A"}</td>
-                    <td className="px-4 py-3 text-gray-700">{data.time || "N/A"}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="11" className="text-center px-4 py-8 text-gray-500">
-                    No data available for this coach.
-                  </td>
+        {/* Data Table Section */}
+        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-800">Real-time Sensor Data</h2>
+            <p className="text-gray-600 mt-1">
+              Showing {coachData.length} records (latest first)
+            </p>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1200px]">
+              <thead>
+                <tr className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                  <th className="px-4 py-4 text-left font-semibold">Train Number</th>
+                  <th className="px-4 py-4 text-left font-semibold">Train Name</th>
+                  <th className="px-4 py-4 text-left font-semibold">Coach UID</th>
+                  <th className="px-4 py-4 text-left font-semibold">Coach Name</th>
+                  <th className="px-4 py-4 text-left font-semibold">Chain Status</th>
+                  <th className="px-4 py-4 text-left font-semibold">Latitude</th>
+                  <th className="px-4 py-4 text-left font-semibold">Longitude</th>
+                  <th className="px-4 py-4 text-left font-semibold">Temperature</th>
+                  <th className="px-4 py-4 text-left font-semibold">Humidity</th>
+                  <th className="px-4 py-4 text-left font-semibold">Memory</th>
+                  <th className="px-4 py-4 text-left font-semibold">Error</th>
+                  <th className="px-4 py-4 text-left font-semibold">Date</th>
+                  <th className="px-4 py-4 text-left font-semibold">Time</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {coachData.length > 0 ? (
+                  coachData.map((data, index) => (
+                    <tr key={data._id || index} 
+                        className={`border-b border-gray-200 hover:bg-gray-50 transition-colors
+                                  ${index === 0 ? 'bg-blue-50' : ''}`}>
+                      <td className="px-4 py-3 text-gray-700 font-medium">{data.train_Number || "N/A"}</td>
+                      <td className="px-4 py-3 text-gray-700">{data.train_Name || "N/A"}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm font-mono">
+                          {data.coach_uid || "N/A"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-700 font-medium">{data.coach_name || "N/A"}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          data.chain_status?.toLowerCase() === 'intact' || data.chain_status?.toLowerCase() === 'normal' 
+                            ? 'bg-green-100 text-green-800' :
+                          data.chain_status?.toLowerCase() === 'pulled' 
+                            ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {data.chain_status || "N/A"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-700 font-mono text-sm">{data.latitude || "N/A"}</td>
+                      <td className="px-4 py-3 text-gray-700 font-mono text-sm">{data.longitude || "N/A"}</td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {data.temperature ? `${data.temperature}°C` : "N/A"}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {data.humidity ? `${data.humidity}%` : "N/A"}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700 font-mono text-sm">{data.memory || "N/A"}</td>
+                      <td className="px-4 py-3 text-gray-700 font-mono text-sm">{data.error || "N/A"}</td>
+                      <td className="px-4 py-3 text-gray-700">{data.date || "N/A"}</td>
+                      <td className="px-4 py-3 text-gray-700">{data.time || "N/A"}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="13" className="text-center px-4 py-12 text-gray-500">
+                      <div className="flex flex-col items-center space-y-3">
+                        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p className="text-lg font-medium">No data available</p>
+                        <p className="text-sm">No sensor data found for this coach.</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
